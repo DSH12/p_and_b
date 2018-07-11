@@ -79,11 +79,13 @@ class Player(object):
         self.bot = bot
         self.playlist = load_queue_file()
         self.volume = 0.05
+        self.thread = None
+        self.is_alive = True
 
         # start this player class as a new thread
-        thread = threading.Thread(target=self.run, args=())
-        thread.daemon = True  # Daemonize thread
-        thread.start()  # Start the execution
+        self.thread = threading.Thread(target=self.run, args=())
+        self.thread.daemon = True  # Daemonize thread
+        self.thread.start()  # Start the execution
 
     def play(self):
         self.playlist = self.get_playlist()
@@ -161,7 +163,7 @@ class Player(object):
         return load_queue_file()
 
     def run(self):
-        while True:
+        while self.is_alive:
             self.play()
             time.sleep(1)
 
@@ -176,6 +178,12 @@ class Player(object):
         print(self.media_player.__dict__)
         print(self.media_player)
         print(inspect.getmembers(self.media_player, predicate=inspect.ismethod))
+
+    def stop(self):
+        self.media_player.stop()
+        self.clear_queue()
+        del self.media_player
+        self.is_alive = False
 
 # YT downloader stuff
 # ---------------------------------
